@@ -1,0 +1,5 @@
+interface:
+  display_name: Web Login Monitor
+  short_description: Ejecuta un login web controlado usando una tool aprobada
+  icon: lock
+  color: blue
