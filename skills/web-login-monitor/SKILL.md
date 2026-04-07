@@ -1,44 +1,35 @@
 ---
 name: web-login-monitor
-description: use this skill when the user needs to validate or execute a login flow in a web portal, especially for monitoring, smoke testing, demo flows, or authentication verification. use it when a browser-based login must be executed through an approved tool and evidence of the result is required.
+description: use this skill when a web portal login must be executed or validated through an approved local browser automation tool and evidence of the result is required.
 ---
 
 # web-login-monitor
 
-Use the tool `web-login-playwright` for login-only scenarios.
+Use the approved local tool `web-login-playwright` for login-only flows.
 
-## Required input
-Send these fields to the tool:
-- `url`
-- `username`
-- `password`
-- `usernameSelector`
-- `passwordSelector`
-- `submitSelector`
+## Scope
+This version only supports:
+- open login page
+- fill username
+- fill password
+- click submit
+- verify success indicator
+- return evidence
 
-## Optional input
-Use these when available:
-- `successIndicator`
-- `headless`
-- `timeoutMs`
+## Required fields
+- url
+- username
+- password
+- usernameSelector
+- passwordSelector
+- submitSelector
 
-## Expected behavior
-1. Validate that the request is only for login.
-2. Invoke `web-login-playwright`.
-3. Return a clear result:
-   - success or failure
-   - message
-   - screenshot path
-   - result path
+## Optional fields
+- successIndicator
+- headless
+- timeoutMs
 
 ## Constraints
-- Do not continue to post-login navigation in this version.
+- Do not continue with post-login navigation.
 - Do not invent selectors.
-- If selectors are missing, request or use the agreed values from the configured flow.
-- Always return evidence if the tool produced it.
-
-## Failure handling
-If the tool fails:
-- report the exact failure message
-- indicate which step failed if available
-- return the screenshot path if generated
+- Always preserve evidence paths returned by the tool.
