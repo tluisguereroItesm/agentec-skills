@@ -1,0 +1,5 @@
+interface:
+  display_name: Graph Files
+  short_description: Consulta y resume archivos OneDrive/SharePoint vía Microsoft Graph
+  icon: file-search
+  color: teal

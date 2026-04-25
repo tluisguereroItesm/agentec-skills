@@ -1,0 +1,5 @@
+interface:
+  display_name: Graph Mail
+  short_description: Consulta y resume correo Microsoft 365 vía Microsoft Graph
+  icon: mail
+  color: emerald

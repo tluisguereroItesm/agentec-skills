@@ -1,0 +1,5 @@
+interface:
+  display_name: Web Login Monitor Python
+  short_description: Ejecuta un login web controlado usando la tool Python aprobada
+  icon: flask-conical
+  color: indigo
