@@ -9,6 +9,35 @@ Usa la herramienta `graph_mail` para escenarios de correo de Microsoft 365 vía 
 
 > **IMPORTANTE**: Para autenticación de Microsoft Graph, usa SIEMPRE `graph_mail` con `action: "auth-login"`. NUNCA uses `web_login_playwright` o `web_login_playwright_py` para Graph.
 
+## Preflight obligatorio de autenticación (primer uso por sesión)
+
+Antes de ejecutar cualquier acción que **no** sea `auth-login` o `auth-poll`:
+
+1. Si en la sesión actual no existe confirmación de autenticación para `graph_mail`, inicia SIEMPRE `auth-login` primero.
+2. Muestra al usuario exactamente:
+  - URL: `{verification_uri}`
+  - Código: `{user_code}`
+  - Mensaje: "Abre esa URL, ingresa el código y avísame con **listo**".
+3. Espera confirmación explícita del usuario (`"listo"`, `"ya"`, `"hecho"`).
+4. Ejecuta `auth-poll`.
+5. Solo si `status = ok`, continúa con la solicitud original (`unread`, `recent`, `search`, etc.).
+6. Si `status = pending`, vuelve a pedir confirmación sin continuar.
+7. Si `status = expired`, genera un nuevo `auth-login`.
+
+## Formato UX obligatorio para autenticación (sin consola)
+
+Cuando la herramienta responda `requiresAuth: true` o `errorType: AUTH_REQUIRED`, responde SIEMPRE con este formato (sin inventar pasos alternos):
+
+1. "Para continuar, abre: **{verification_uri}**"
+2. "Ingresa este código: **{user_code}**"
+3. "Cuando termines, escribe: **listo**"
+
+Reglas estrictas:
+- No digas que la integración "no existe" si hay `verification_uri` y `user_code`.
+- No sugieras consola al usuario final.
+- No cambies a herramientas `web_login_playwright` o similares.
+- Si el usuario responde "listo", reintenta la acción original (el backend intentará `auth-poll` automáticamente cuando aplique).
+
 ---
 
 ## Acciones soportadas

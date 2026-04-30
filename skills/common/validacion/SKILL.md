@@ -14,6 +14,19 @@ Lógica reutilizable de validación. Aplícala antes de invocar cualquier herram
 
 ## Reglas de validación
 
+### Precondición de autenticación (Microsoft Graph)
+Para cualquier skill/herramienta Microsoft Graph (por ejemplo: `graph_mail`, `graph_files`, `graph_files_write`, `graph_calendar`, `graph_teams`, `graph_users`, `graph_sharepoint_search`, `graph_approvals`, `graph_flows`, `graph_powerbi`):
+
+1. Antes de ejecutar acciones de negocio, verifica si ya existe autenticación confirmada en la sesión activa.
+2. Si no existe autenticación confirmada, detén la ejecución funcional e inicia el flujo:
+   - `auth-login`
+   - Mostrar `verification_uri` y `user_code`
+   - Esperar confirmación del usuario (`listo`/`ya`/`hecho`)
+   - `auth-poll`
+3. Solo cuando `auth-poll` sea exitoso, continuar con la acción solicitada.
+4. Si `auth-poll` devuelve `pending`, mantener la espera y no ejecutar la acción de negocio.
+5. Si devuelve `expired`, reiniciar con `auth-login`.
+
 ### Campos requeridos
 1. Identifica todos los campos requeridos para la acción actual.
 2. Verifica que cada campo esté presente y no vacío.

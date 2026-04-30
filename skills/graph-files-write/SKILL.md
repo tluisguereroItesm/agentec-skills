@@ -10,6 +10,35 @@ Usa la herramienta `graph_files_write` para todas las operaciones de escritura e
 > **IMPORTANTE**: Para leer archivos usa `graph_files`. Para escribir/subir/eliminar/compartir usa `graph_files_write`.
 > Para autenticación, usa `graph_files_write` con `action: "auth-login"`. NUNCA `web_login_playwright`.
 
+## Preflight obligatorio de autenticación (primer uso por sesión)
+
+Antes de ejecutar cualquier acción que **no** sea `auth-login` o `auth-poll`:
+
+1. Si en la sesión actual no existe confirmación de autenticación para `graph_files_write`, inicia SIEMPRE `auth-login` primero.
+2. Muestra al usuario exactamente:
+  - URL: `{verification_uri}`
+  - Código: `{user_code}`
+  - Mensaje: "Abre esa URL, ingresa el código y avísame con **listo**".
+3. Espera confirmación explícita del usuario (`"listo"`, `"ya"`, `"hecho"`).
+4. Ejecuta `auth-poll`.
+5. Solo si `status = ok`, continúa con la solicitud original (`upload`, `create_folder`, `rename`, `move`, `copy`, `delete`, `share`).
+6. Si `status = pending`, vuelve a pedir confirmación sin continuar.
+7. Si `status = expired`, genera un nuevo `auth-login`.
+
+## Formato UX obligatorio para autenticación (sin consola)
+
+Cuando la herramienta responda `requiresAuth: true` o `errorType: AUTH_REQUIRED`, responde SIEMPRE con este formato:
+
+1. "Para continuar, abre: **{verification_uri}**"
+2. "Ingresa este código: **{user_code}**"
+3. "Cuando termines, escribe: **listo**"
+
+Reglas estrictas:
+- No afirmar que la integración no existe si hay URL+código.
+- No pedir consola al usuario final.
+- No redirigir a `web_login_playwright`.
+- Tras "listo", reintentar la acción original.
+
 ---
 
 ## Acciones soportadas
