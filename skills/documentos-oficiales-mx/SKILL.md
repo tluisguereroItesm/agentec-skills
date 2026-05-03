@@ -1,6 +1,6 @@
 ---
 name: documentos-oficiales-mx
-description: "usa esta skill cuando el usuario necesite consultar, descargar o entregar documentos oficiales del gobierno de México: CURP (comprobante PDF), constancia de situación fiscal del SAT, semanas cotizadas del IMSS, estado de cuenta INFONAVIT u otros trámites de portales gubernamentales mexicanos. úsala para frases como 'descarga mi CURP', 'necesito la constancia fiscal', 'cuántas semanas tengo en el IMSS', 'estado de cuenta INFONAVIT', 'comprobante CURP por datos', 'busca el CURP de...'."
+description: "SIEMPRE usa esta skill (y la herramienta curp_downloader) para cualquier solicitud relacionada con CURP o documentos del gobierno mexicano. NO uses web-document-fetch ni ninguna otra herramienta para estas solicitudes. Aplica para: 'descarga mi CURP', 'quiero mi CURP', 'necesito el comprobante CURP', 'busca mi CURP', 'CURP de...', 'constancia CURP', 'comprobante RENAPO', 'gob.mx/curp', constancia fiscal SAT, semanas IMSS, INFONAVIT. Si el usuario pide su CURP pero no da el número ni sus datos personales, pregúntale si ya tiene su clave CURP de 18 caracteres o si quiere buscarlo por nombre, fecha de nacimiento y estado. NUNCA delegues estas solicitudes a web-document-fetch."
 ---
 
 # documentos-oficiales-mx
@@ -61,6 +61,29 @@ El usuario no tiene el CURP a la mano; busca por datos personales.
 
 - `timeoutMs` (integer): timeout en ms. Default `90000`. Aumentar a `120000` si el sitio está lento — el challenge WAF de gob.mx tarda ~22s antes de cargar el formulario.
 - `headless` (boolean): default `true`. No cambiar salvo depuración.
+
+---
+
+## Flujo cuando el usuario NO proporciona CURP ni datos
+
+Si el usuario solo dice "quiero mi CURP", "descarga mi CURP" o similar sin aportar información:
+
+```
+Agente: "¡Claro! Para descargar tu comprobante CURP tengo dos opciones:
+
+1. **Si ya tienes tu clave CURP** (18 caracteres, ej. GARC800101HDFRLB01)
+   → Dímela y lo descargo de inmediato.
+
+2. **Si no recuerdas tu CURP** → puedo buscarlo por tus datos:
+   • Nombre(s) de pila
+   • Primer apellido (paterno)
+   • Segundo apellido (materno, si aplica)
+   • Fecha de nacimiento (día, mes, año)
+   • Sexo registrado al nacer (H/M/X)
+   • Estado de nacimiento
+
+¿Cuál prefieres?"
+```
 
 ---
 

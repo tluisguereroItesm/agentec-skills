@@ -1,6 +1,6 @@
 ---
 name: web-document-fetch
-description: "usa esta skill cuando el usuario necesite descargar un documento (PDF, DOCX, XLSX u otro archivo) desde una página web o portal mediante múltiples pasos en navegador (login, navegación y click de descarga). también úsala para extraer el ID y formato de un video de YouTube (sin descargar video)."
+description: "usa esta skill cuando el usuario necesite descargar un documento (PDF, DOCX, XLSX u otro archivo) desde una página web o portal mediante múltiples pasos en navegador (login, navegación y click de descarga). también úsala para extraer el ID y formato de un video de YouTube (sin descargar video). NUNCA uses esta skill para solicitudes de CURP, documentos del gobierno mexicano (gob.mx/curp, SAT, IMSS, INFONAVIT) — usa documentos-oficiales-mx en su lugar."
 ---
 
 # web-document-fetch
