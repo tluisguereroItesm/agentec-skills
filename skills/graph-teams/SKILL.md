@@ -13,7 +13,8 @@ Usa la herramienta `graph_teams` para interactuar con Microsoft Teams.
 
 Antes de ejecutar cualquier acción que **no** sea `auth-login` o `auth-poll`:
 
-1. Si en la sesión actual no existe confirmación de autenticación para `graph_teams`, inicia SIEMPRE `auth-login` primero.
+1. Si en la sesión actual no existe confirmación de autenticación para `graph_teams`,
+**o si alguna llamada previa retornó `errorType: AUTH_ERROR`**, inicia siempre `auth-login` primero.
 2. Muestra al usuario exactamente:
   - URL: `{verification_uri}`
   - Código: `{user_code}`
@@ -37,6 +38,13 @@ Reglas estrictas:
 - No pedir consola al usuario final.
 - No redirigir a `web_login_playwright`.
 - Tras "listo", reintentar la acción original.
+
+## Identificación del usuario
+
+La herramienta opera por defecto sobre la sesión Graph del **owner** del
+profile configurado (el humano que hizo `auth-login` originalmente).
+**No pases el parámetro `user`** salvo que tengas instrucciones explícitas
+para gestionar sesiones de múltiples usuarios bajo el mismo profile.
 
 ---
 
@@ -106,6 +114,22 @@ Usuario: "manda al canal General de agentec que el deploy quedó listo"
   Agente: "Mensaje enviado correctamente al canal General de agentec Dev."
 ```
 
+### Listar chats 1:1 y grupales
+
+Usuario: "muéstrame mis chats de Teams"
+
+→ Llama chats
+→ Presenta una lista corta con topic o miembros (no IDs).
+→ Pregunta si quiere abrir alguno en Teams (no hay acción de leer chat por ahora).
+
+### Ver miembros de un equipo
+
+Usuario: "¿quiénes están en agentec Dev?"
+
+→ Si no tienes teamId: llama teams → identifica 'agentec Dev'
+→ Llama members
+→ Presenta nombres y, si es relevante, roles (owner/member).
+
 ---
 
 ## Recuperación de errores
@@ -151,6 +175,18 @@ Agente: "No tengo permisos para enviar mensajes a ese canal.
          ¿Quieres enviar el mensaje a otro canal?"
 ```
 
+### Otros errores de la API (errorType: GRAPH_ERROR)
+
+Si la respuesta tiene `errorType: "GRAPH_ERROR"` y NO es un 401/403:
+
+- Explica al usuario en lenguaje natural qué falló (lectura, envío, listado).
+- NO pegues el JSON ni el mensaje técnico literal de Microsoft Graph.
+- Sugiere reintentar más tarde y, si persiste, reportar.
+- No intentes leer artefactos de log — no son accesibles al agente.
+
+Ejemplo:
+"Hubo un error técnico al consultar Microsoft Teams. ¿Quieres que lo intente de nuevo, o prefieres probar con otro equipo/canal?"
+
 ---
 
 ## Reglas de clarificación
@@ -169,20 +205,16 @@ Pregunta ANTES de ejecutar cuando:
 ## Reglas absolutas
 
 - **Nunca envíes un mensaje sin mostrar el borrador y recibir aprobación explícita.**
-- No expongas teamIds ni channelIds internos al usuario.
+- No expongas teamIds ni channelIds internos al usuario salvo que el usuario los haya proporcionado o los pida explícitamente.
 - Cuando el usuario menciona un equipo o canal por nombre, primero resuélvelo con `teams`/`channels`.
+- Si el usuario te da un `teamId` (GUID) o `channelId` (cadena tipo `19:...@thread.tacv2`)
+  directamente, úsalos tal cual sin pasar antes por `teams`/`channels` para "resolverlos".
 
 ---
 
 ## Flujo de autenticación (device code)
 
-Cuando la herramienta devuelva `errorType: AUTH_ERROR`:
-
-**Paso 1:** Llama `graph_teams` con `{"action": "auth-login"}`.
-> "Para autenticarte en Microsoft Teams, abre **{verification_uri}** en tu navegador
-> e ingresa el código **{user_code}**. Avísame cuando hayas completado el login."
-
-**Paso 2:** Cuando el usuario confirme, llama `graph_teams` con `{"action": "auth-poll"}`.
-- `status: "ok"` → retoma la solicitud original.
-- `status: "pending"` → "Parece que aún no completaste el login. ¿Ya ingresaste el código?"
-- `status: "expired"` → "El código expiró. Voy a generar uno nuevo." → repite desde Paso 1.
+Ver "Preflight obligatorio de autenticación" arriba. Los `status` posibles de `auth-poll` son:
+- `ok` → retomar la acción original.
+- `pending` → "Parece que aún no completaste el login. ¿Ya ingresaste el código?"
+- `expired` → "El código expiró, voy a generar uno nuevo." → repetir `auth-login`.
