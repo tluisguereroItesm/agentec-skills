@@ -93,7 +93,7 @@ Usuario: "¿qué sitios de SharePoint tenemos?"
   Agente: "La organización tiene 6 sitios de SharePoint:
            - Compras — [Abrir sitio](url)
            - RH — [Abrir sitio](url)
-           - TI / Agentec — [Abrir sitio](url)
+           - TI / agentec — [Abrir sitio](url)
            [...]
            ¿Quieres buscar documentos en alguno en específico?"
 ```

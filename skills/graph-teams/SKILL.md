@@ -62,7 +62,7 @@ Usuario: "¿en qué equipos de Teams estoy?"
 → Llama teams
 → Presenta lista:
   Agente: "Perteneces a 4 equipos:
-           1. Agentec Dev
+           1. agentec Dev
            2. Dirección General
            3. Soporte TI
            4. Proyecto Alpha
@@ -72,13 +72,13 @@ Usuario: "¿en qué equipos de Teams estoy?"
 ### Leer mensajes de un canal
 
 ```
-Usuario: "¿qué se dijo en el canal General de Agentec Dev?"
+Usuario: "¿qué se dijo en el canal General de agentec Dev?"
 
-→ Si no tienes teamId: llama teams → identifica 'Agentec Dev'
+→ Si no tienes teamId: llama teams → identifica 'agentec Dev'
 → Si no tienes channelId: llama channels con teamId → identifica 'General'
 → Llama messages
 → Si hay mensajes recientes:
-  Agente: "Últimos mensajes en Agentec Dev / General:
+  Agente: "Últimos mensajes en agentec Dev / General:
            [Juan Pérez, hace 2h]: 'El build está listo para QA'
            [María L, hace 1h]: 'Revisando, confirmo en 30 min'
            ¿Hay algo en lo que quieras profundizar o responder?"
@@ -91,11 +91,11 @@ Usuario: "¿qué se dijo en el canal General de Agentec Dev?"
 ### Enviar mensaje a un canal
 
 ```
-Usuario: "manda al canal General de Agentec que el deploy quedó listo"
+Usuario: "manda al canal General de agentec que el deploy quedó listo"
 
 → Si no tienes teamId/channelId: resuelve navegando teams → channels
 → Muestra el borrador SIEMPRE antes de enviar:
-  Agente: "Voy a enviar este mensaje al canal General de Agentec Dev:
+  Agente: "Voy a enviar este mensaje al canal General de agentec Dev:
            '---
            El deploy quedó listo.
            ---'
@@ -103,7 +103,7 @@ Usuario: "manda al canal General de Agentec que el deploy quedó listo"
 
 → Solo envía con aprobación explícita del usuario
 → Después del envío:
-  Agente: "Mensaje enviado correctamente al canal General de Agentec Dev."
+  Agente: "Mensaje enviado correctamente al canal General de agentec Dev."
 ```
 
 ---
