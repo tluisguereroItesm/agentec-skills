@@ -7,7 +7,8 @@ description: "usa esta skill cuando el usuario quiera ver sus flujos de Power Au
 
 Usa la herramienta `graph_flows` para gestionar flujos de Power Automate vía Power Platform API.
 
-> **IMPORTANTE**: Para autenticación de Microsoft Graph, usa SIEMPRE `graph_flows` con `action: "auth-login"`. NUNCA uses `web_login_playwright` para esto.
+> **IMPORTANTE**: Para autenticación, usa SIEMPRE `graph_flows` con `action: "auth-login"`. NUNCA uses `web_login_playwright` para esto.
+Detrás de cámara el primer login se hace contra Microsoft Identity Platform y la sesión sirve para Power Automate, Power BI y Approvals sin re-loguear.
 
 ## Preflight obligatorio de autenticación (primer uso por sesión)
 
@@ -39,18 +40,15 @@ Reglas estrictas:
 - No redirigir a `web_login_playwright`.
 - Tras "listo", reintentar la acción original.
 
-## Identificación del usuario
+## Selección de environment
 
-La herramienta opera por defecto sobre la sesión Graph del **owner** del
-profile configurado (el humano que hizo `auth-login` originalmente).
-**No pases el parámetro `user`** salvo que tengas instrucciones explícitas
-para gestionar sesiones de múltiples usuarios bajo el mismo profile.
-
-Si necesitas operar sobre un buzón distinto al del owner (por ejemplo, un
-buzón compartido o el de otro empleado al que tienes permisos delegados),
-usa el parámetro **`graphUserId`** con el UPN o ID del usuario destino.
-Eso no cambia la sesión: usa la misma autenticación, solo redirige las
-llamadas a `/users/{graphUserId}` en vez de `/me`.
+La herramienta opera por defecto sobre el environment `~default` del
+tenant (el environment principal de Power Automate). Si el usuario tiene
+flujos en otros environments (ej. `Default-{tenantId}`, environments
+custom de equipos), pásalo en el parámetro **`environment`** con el ID
+exacto. Si el usuario menciona "el environment de marketing" o algo
+ambiguo, primero lista los flujos del default y, si no aparecen, pregunta
+qué environment usar.
 
 ---
 
@@ -173,6 +171,20 @@ any action returns: 403
 Agente: "No tengo permisos para [acción] este flow.
          Es posible que pertenezca a otro usuario o entorno.
          ¿Quieres que busque en otro entorno o revises los permisos?"
+```
+
+### Error de configuración de la app (CONSENT_ERROR)
+
+Cuando la herramienta devuelva `errorType: CONSENT_ERROR`, los permisos
+de Power Automate no están habilitados en la app de Azure AD del tenant.
+
+- **NO intentes auth-login**: un nuevo login del usuario no resuelve esto.
+- Comunica al usuario:
+  "Los permisos de Power Automate aún no están habilitados en la app
+   registrada en Azure AD. Necesitas que un administrador del tenant
+   los agregue en App registrations → API permissions y haga grant
+   admin consent. Mientras tanto no puedo operar sobre tus flujos."
+- No reintentes la acción automáticamente.
 ```
 
 ### Sin historial de ejecuciones
