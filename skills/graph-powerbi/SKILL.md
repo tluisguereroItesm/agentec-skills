@@ -7,7 +7,12 @@ description: "usa esta skill cuando el usuario quiera explorar workspaces de Pow
 
 Usa la herramienta `graph_powerbi` para todas las interacciones de Power BI.
 
-> **IMPORTANTE**: Power BI requiere su propio token de autenticación (separado de correo/archivos). Usa SIEMPRE `graph_powerbi` con `action: "auth-login"` cuando se necesite autenticación. NUNCA uses `web_login_playwright` para esto.
+> **IMPORTANTE**: Power BI usa su propio recurso de Azure AD
+> (`https://analysis.windows.net/powerbi/api`). El primer login se hace
+> contra Microsoft Identity Platform con el flujo device code (vía
+> `action: "auth-login"` de esta misma tool), y el runtime intercambia
+> el refresh_token resultante por un access_token de Power BI vía MRRT
+> sin segunda interacción. NUNCA uses `web_login_playwright` para esto.
 
 ## Preflight obligatorio de autenticación (primer uso por sesión)
 
@@ -39,18 +44,22 @@ Reglas estrictas:
 - No redirigir a `web_login_playwright`.
 - Tras "listo", reintentar la acción original.
 
-## Identificación del usuario
+## Selección de workspace
 
-La herramienta opera por defecto sobre la sesión Graph del **owner** del
-profile configurado (el humano que hizo `auth-login` originalmente).
-**No pases el parámetro `user`** salvo que tengas instrucciones explícitas
-para gestionar sesiones de múltiples usuarios bajo el mismo profile.
+La herramienta opera sobre workspaces de Power BI. Power BI no opera por
+UPN/buzón de usuario como Outlook — opera por **workspace** (también
+llamado "group" o "espacio"). Cada usuario tiene un "My Workspace"
+personal más acceso a los workspaces compartidos en los que está
+incluido.
 
-Si necesitas operar sobre un buzón distinto al del owner (por ejemplo, un
-buzón compartido o el de otro empleado al que tienes permisos delegados),
-usa el parámetro **`graphUserId`** con el UPN o ID del usuario destino.
-Eso no cambia la sesión: usa la misma autenticación, solo redirige las
-llamadas a `/users/{graphUserId}` en vez de `/me`.
+Si el usuario no especifica workspace, llama primero `action: "workspaces"`
+para listarlos y pregunta cuál usar (a menos que solo haya uno, en cuyo
+caso úsalo directamente).
+
+El parámetro `user` de las graph-tools NO aplica aquí — Power BI no
+soporta operar "como otro usuario" desde una sesión delegada. Si necesitas
+acceder a workspaces de otra persona, ella debe compartirte acceso en el
+portal de Power BI primero.
 
 ---
 
@@ -139,6 +148,21 @@ Usuario: "abre el reporte de KPIs ejecutivos"
 
 ## Recuperación de errores
 
+### Permisos de Power BI no consentidos en la app (CONSENT_ERROR)
+
+```
+graph_powerbi returns: errorType: CONSENT_ERROR
+
+Agente: "Los permisos de Power BI aún no están habilitados en la app
+         registrada en Azure AD. Esto requiere que un administrador del
+         tenant los agregue en App registrations → API permissions
+         (buscar 'Power BI Service') y haga grant admin consent.
+         No es algo que se resuelva con un nuevo login. Mientras tanto
+         no puedo consultar tus workspaces."
+```
+
+**Importante**: ante `CONSENT_ERROR`, **NO intentes `auth-login`** ni reintentes la acción. Un nuevo login no cambia los permisos de la app.
+
 ### Reporte no encontrado
 
 ```
@@ -167,13 +191,15 @@ Agente: "La consulta no devolvió datos para '[período/filtro]'.
          o prefieres consultar un período diferente?"
 ```
 
-### Error de permisos (403)
+### Error de permisos de workspace (403)
 
 ```
 graph_powerbi returns: PBI_ERROR: [403]
 
-Agente: "No tengo acceso a este workspace o dataset.
-         Esto ocurre cuando el reporte es privado o no se ha compartido contigo.
+Agente: "No tengo acceso a este workspace o dataset. Esto ocurre cuando
+         el reporte es privado o no se ha compartido contigo en Power BI.
+         Es distinto al permiso de la app: aquí el problema es que el
+         dueño del workspace no te ha dado acceso.
          ¿Quieres buscar en otro workspace al que sí tengas acceso?"
 ```
 
@@ -230,3 +256,5 @@ Cuando la herramienta devuelva `errorType: AUTH_ERROR`:
 - `status: "ok"` → retoma la solicitud original desde el principio.
 - `status: "pending"` → "Parece que aún no completaste el login. ¿Ya ingresaste el código en la página?"
 - `status: "expired"` → "El código expiró. Voy a generar uno nuevo." → repite desde Paso 1.
+
+**No confundir `AUTH_ERROR` con `CONSENT_ERROR`**: `AUTH_ERROR` significa que la sesión expiró (la fix es un nuevo login); `CONSENT_ERROR` significa que la app de Azure AD no tiene los permisos consentidos (la fix la hace un admin, no el usuario, y no se resuelve con login).
