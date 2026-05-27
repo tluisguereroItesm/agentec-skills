@@ -33,7 +33,7 @@ Antes de ejecutar cualquier acción que **no** sea `auth-login` o `auth-poll`:
 
 ## Formato UX obligatorio para autenticación (sin consola)
 
-Cuando la herramienta responda `requiresAuth: true` o `errorType: AUTH_REQUIRED`, responde SIEMPRE con este formato:
+Cuando la herramienta responda `errorType: AUTH_ERROR`, responde SIEMPRE con este formato:
 
 1. "Para continuar, abre: **{verification_uri}**"
 2. "Ingresa este código: **{user_code}**"
