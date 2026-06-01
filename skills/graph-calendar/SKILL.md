@@ -13,7 +13,8 @@ Usa la herramienta `graph_calendar` para leer y gestionar el calendario de Micro
 
 Antes de ejecutar cualquier acción que **no** sea `auth-login` o `auth-poll`:
 
-1. Si en la sesión actual no existe confirmación de autenticación para `graph_calendar`, inicia SIEMPRE `auth-login` primero.
+1. Si en la sesión actual no existe confirmación de autenticación para `graph_calendar`,
+**o si alguna llamada previa retornó `errorType: AUTH_ERROR`**, inicia siempre `auth-login` primero.
 2. Muestra al usuario exactamente:
   - URL: `{verification_uri}`
   - Código: `{user_code}`
@@ -37,6 +38,29 @@ Reglas estrictas:
 - No pedir consola al usuario final.
 - No redirigir a `web_login_playwright`.
 - Tras "listo", reintentar la acción original.
+
+## Identificación del usuario
+
+La herramienta opera por defecto sobre la sesión Graph del **owner** del
+profile configurado (el humano que hizo `auth-login` originalmente).
+**No pases el parámetro `user`** salvo que tengas instrucciones explícitas
+para gestionar sesiones de múltiples usuarios bajo el mismo profile.
+
+Si necesitas operar sobre un buzón distinto al del owner (por ejemplo, un
+buzón compartido o el de otro empleado al que tienes permisos delegados),
+usa el parámetro **`graphUserId`** con el UPN o ID del usuario destino.
+Eso no cambia la sesión: usa la misma autenticación, solo redirige las
+llamadas a `/users/{graphUserId}` en vez de `/me`.
+
+Zona horaria: la herramienta opera en la zona local del owner por defecto. 
+No envíes el parámetro timezone en create/update salvo que el usuario 
+explícitamente pida agendar en otra zona (ej: "agenda esta llamada en hora de Madrid"). 
+Cuando el usuario dice "mañana a las 10", asume hora local; no conviertas 
+a UTC ni a ningún offset antes de pasar start/end.
+
+Pasa start y end como hora naive (sin Z, sin offset, sin sufijo). Ejemplo correcto: 
+"2026-05-21T10:00:00". Ejemplos incorrectos: "2026-05-21T10:00:00Z", 
+"2026-05-21T10:00:00-06:00". La zona la gestiona la herramienta por separado.
 
 ---
 
@@ -199,7 +223,7 @@ Pregunta ANTES de ejecutar cuando:
 
 - **Nunca canceles o elimines un evento sin confirmación explícita del usuario.**
 - Siempre muestra un resumen del evento a crear antes de ejecutar.
-- Presenta las horas en formato local legible (ej: "lunes 25 abr a las 10:00") no en ISO.
+- Presenta las horas tomando start.dateTime y end.dateTime tal como vienen de la herramienta, sin aplicar conversiones de zona horaria. La herramienta ya devuelve las fechas en la zona local del owner (campo startTz/endTz). Reformatea solo el estilo de visualización (ej: convierte "2026-05-21T10:00:00.0000000" a "21 abr a las 10:00"), no el valor.
 - Si el usuario menciona "Teams" o "virtual" al crear, agrega `isOnline: true`.
 - Cuando haya conflicto de horario, informa antes de crear.
 
