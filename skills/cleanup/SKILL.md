@@ -1,7 +1,7 @@
-# SKILL: cleanup — recolector de limpieza de Agentec
+# SKILL: cleanup — recolector de limpieza de agentec
 
 ## Propósito
-Limpiar artifacts acumulados (JSONs de herramientas, screenshots), logs y archivos temporales del stack Agentec.
+Limpiar artifacts acumulados (JSONs de herramientas, screenshots), logs y archivos temporales del stack agentec.
 Los artifacts contienen datos sensibles (correos, calendarios, reportes Power BI) y deben purgarse regularmente.
 
 ## Herramienta

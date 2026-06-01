@@ -13,7 +13,8 @@ Usa la herramienta `graph_sharepoint_search` para búsquedas organizacionales de
 
 Antes de ejecutar cualquier acción que **no** sea `auth-login` o `auth-poll`:
 
-1. Si en la sesión actual no existe confirmación de autenticación para `graph_sharepoint_search`, inicia SIEMPRE `auth-login` primero.
+1. Si en la sesión actual no existe confirmación de autenticación para `graph_sharepoint_search`,
+**o si alguna llamada previa retornó `errorType: AUTH_ERROR`**, inicia siempre `auth-login` primero.
 2. Muestra al usuario exactamente:
    - URL: `{verification_uri}`
    - Código: `{user_code}`
@@ -37,6 +38,13 @@ Reglas estrictas:
 - No pedir consola al usuario final.
 - No redirigir a `web_login_playwright`.
 - Tras "listo", reintentar la acción original.
+
+## Identificación del usuario
+
+La herramienta opera por defecto sobre la sesión Graph del **owner** del
+profile configurado (el humano que hizo `auth-login` originalmente).
+**No pases el parámetro `user`** salvo que tengas instrucciones explícitas
+para gestionar sesiones de múltiples usuarios bajo el mismo profile.
 
 ---
 
@@ -93,7 +101,7 @@ Usuario: "¿qué sitios de SharePoint tenemos?"
   Agente: "La organización tiene 6 sitios de SharePoint:
            - Compras — [Abrir sitio](url)
            - RH — [Abrir sitio](url)
-           - TI / Agentec — [Abrir sitio](url)
+           - TI / agentec — [Abrir sitio](url)
            [...]
            ¿Quieres buscar documentos en alguno en específico?"
 ```
